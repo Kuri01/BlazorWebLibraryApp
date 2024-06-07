@@ -1,0 +1,116 @@
+﻿@implements IDisposable
+
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">Biblioteka</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler"/>
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                Strona Główna
+            </NavLink>
+        </div>
+
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="books">
+                Książki
+            </NavLink>
+        </div>
+
+        <AuthorizeView>
+            <Authorized Context="authState">
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="borrowed-books">
+                        Wypożyczone Książki
+                    </NavLink>
+                </div>
+
+                @* Opcje administracyjne widoczne tylko dla Administratorów *@
+                <AuthorizeView Roles="Administrator">
+                    <Authorized Context="adminState">
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="admin/books">
+                           Zarządzaj Książkami
+                            </NavLink>
+                        </div>
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link" href="admin/users">
+                                 Zarządzaj Użytkownikami
+                            </NavLink>
+                        </div>
+                    </Authorized>
+                </AuthorizeView>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Account/Manage">
+                        <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> @authState.User.Identity.Name
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <form action="Account/Logout" method="post">
+                        <AntiforgeryToken/>
+                        <input type="hidden" name="ReturnUrl" value="@currentUrl"/>
+                        <button type="submit" class="nav-link">
+                            <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true"></span> Wyloguj
+                        </button>
+                    </form>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Account/Register">
+                        <span class="bi bi-person-nav-menu" aria-hidden="true"></span> Rejestracja
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Account/Login">
+                        <span class="bi bi-person-badge-nav-menu" aria-hidden="true"></span> Zaloguj
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+    </nav>
+</div>
+
+@code {
+private string? currentUrl;
+
+protected override async Task OnInitializedAsync()
+{
+currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+NavigationManager.LocationChanged += OnLocationChanged;
+
+var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+var user = authState.User;
+
+if (user.Identity.IsAuthenticated)
+{
+var roles = user.FindAll(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+// Debugging output
+Console.WriteLine("Role użytkownika:");
+roles.ForEach(role => Console.WriteLine(role));
+}
+}
+
+private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+{
+currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+StateHasChanged();
+}
+
+public void Dispose()
+{
+NavigationManager.LocationChanged -= OnLocationChanged;
+}
+}

@@ -1,0 +1,69 @@
+.admin-users-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.admin-users-container h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #333;
+}
+
+.admin-users-container ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.admin-users-container li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.admin-users-container li span {
+    flex-grow: 1;
+    margin-right: 10px;
+    color: #333;
+}
+
+.admin-users-container button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+.admin-users-container button:hover {
+    background-color: #0056b3;
+}
+
+.admin-users-container .delete-button {
+    background-color: #dc3545;
+}
+
+.admin-users-container .delete-button:hover {
+    background-color: #c82333;
+}
+
+.admin-users-container .block-button {
+    background-color: #ffc107;
+    color: #333;
+}
+
+.admin-users-container .block-button:hover {
+    background-color: #e0a800;
+}

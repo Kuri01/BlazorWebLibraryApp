@@ -1,0 +1,79 @@
+@page "/admin/users"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Administrator")]
+@using BlazorApp3.Data
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager Navigation
+
+<div class="admin-users-container">
+    <h3>Zarządzaj Użytkownikami</h3>
+
+    @if (users == null)
+    {
+    <p>Ładowanie...</p>
+    }
+    else if (users.Count == 0)
+    {
+    <p>Brak dostępnych użytkowników.</p>
+    }
+    else
+    {
+    <ul>
+        @foreach (var user in users)
+        {
+        <li>
+            <span>@user.Email</span>
+            <button @onclick="() => EditUser(user.Id)">Edytuj</button>
+            <button class="delete-button" @onclick="() => DeleteUser(user.Id)">Usuń</button>
+            <button class="block-button" @onclick="() => ToggleBlockUser(user.Id, user.LockoutEnd)">
+                @(user.LockoutEnd.HasValue && user.LockoutEnd > DateTimeOffset.Now ? "Odblokuj" : "Zablokuj")
+            </button>
+        </li>
+        }
+    </ul>
+    }
+</div>
+
+@code {
+private List<ApplicationUser> users;
+
+protected override async Task OnInitializedAsync()
+{
+users = await UserManager.Users.ToListAsync();
+}
+
+private void EditUser(string userId)
+{
+Navigation.NavigateTo($"/admin/users/edit/{userId}");
+}
+
+private async Task DeleteUser(string userId)
+{
+var user = await UserManager.FindByIdAsync(userId);
+if (user != null)
+{
+await UserManager.DeleteAsync(user);
+users = await UserManager.Users.ToListAsync();
+}
+}
+
+private async Task ToggleBlockUser(string userId, DateTimeOffset? lockoutEnd)
+{
+var user = await UserManager.FindByIdAsync(userId);
+if (user != null)
+{
+if (lockoutEnd.HasValue && lockoutEnd > DateTimeOffset.Now)
+{
+user.LockoutEnd = DateTimeOffset.Now;
+}
+else
+{
+user.LockoutEnd = DateTimeOffset.MaxValue;
+}
+await UserManager.UpdateAsync(user);
+users = await UserManager.Users.ToListAsync();
+}
+}
+}

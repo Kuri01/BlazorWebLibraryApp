@@ -1,0 +1,45 @@
+@page "/admin/users/edit/{userId}"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Administrator")]
+@using BlazorApp3.Data
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager Navigation
+
+<div class="admin-user-edit-container">
+    <h3>Edytuj Użytkownika</h3>
+
+    <EditForm Model="user" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div>
+            <label>Email:</label>
+            <InputText @bind-Value="user.Email" />
+        </div>
+        <div>
+            <label>Nazwa Użytkownika:</label>
+            <InputText @bind-Value="user.UserName" />
+        </div>
+        <div>
+            <label>Numer Telefonu:</label>
+            <InputText @bind-Value="user.PhoneNumber" />
+        </div>
+        <button type="submit">Zapisz</button>
+    </EditForm>
+</div>
+
+@code {
+[Parameter] public string userId { get; set; }
+private ApplicationUser user = new ApplicationUser();
+
+protected override async Task OnInitializedAsync()
+{
+user = await UserManager.FindByIdAsync(userId);
+}
+
+private async Task HandleValidSubmit()
+{
+await UserManager.UpdateAsync(user);
+Navigation.NavigateTo("/admin/users");
+}
+}

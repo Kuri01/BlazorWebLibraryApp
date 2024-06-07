@@ -1,0 +1,45 @@
+@page "/admin/books/edit/{bookId:int}"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Administrator")]
+@using BlazorApp3.Data
+@using BlazorApp3.Services
+@inject IBookService BookService
+@inject NavigationManager Navigation
+
+<div class="admin-book-edit-container">
+    <h3>Edytuj Książkę</h3>
+
+    <EditForm Model="book" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div>
+            <label>Tytuł:</label>
+            <InputText @bind-Value="book.Title" />
+        </div>
+        <div>
+            <label>Autor:</label>
+            <InputText @bind-Value="book.Author" />
+        </div>
+        <div>
+            <label>Opis:</label>
+            <InputTextArea @bind-Value="book.Description" />
+        </div>
+        <button type="submit">Zapisz</button>
+    </EditForm>
+</div>
+
+@code {
+[Parameter] public int bookId { get; set; }
+private Book book = new Book();
+
+protected override async Task OnInitializedAsync()
+{
+book = await BookService.GetBookByIdAsync(bookId);
+}
+
+private async Task HandleValidSubmit()
+{
+await BookService.UpdateBookAsync(book);
+Navigation.NavigateTo("/admin/books");
+}
+}

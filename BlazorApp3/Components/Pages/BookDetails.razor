@@ -1,0 +1,77 @@
+@page "/book/{bookId:int}"
+@rendermode InteractiveServer
+@using System.Security.Claims
+@using BlazorApp3.Data
+@using BlazorApp3.Services
+@inject IBookService BookService
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div class="book-details-container">
+    <h3>Szczegóły Książki</h3>
+
+    @if (book == null)
+    {
+        <p>Ładowanie...</p>
+    }
+    else
+    {
+        <h4>@book.Title by @book.Author</h4>
+        <p>@book.Description</p>
+        @if (isBorrowed)
+        {
+            <button class="return-button" @onclick="ReturnBook">Zwróć</button>
+        }
+        else if (!book.IsBorrowed)
+        {
+            <button @onclick="BorrowBook">Wypożycz</button>
+        }
+        else
+        {
+            <p>Ta książka jest obecnie wypożyczona przez innego użytkownika.</p>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public int bookId { get; set; }
+    private Book book;
+    private bool isBorrowed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        book = await BookService.GetBookByIdAsync(bookId);
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        if (!string.IsNullOrEmpty(userId))
+        {
+            isBorrowed = await BookService.IsBookBorrowedByUserAsync(bookId, userId);
+        }
+    }
+
+    private async Task BorrowBook()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            Navigation.NavigateTo("/Account/Login");
+        }
+        else
+        {
+            await BookService.BorrowBookAsync(bookId, userId);
+            Navigation.NavigateTo("/borrowed-books");
+        }
+    }
+
+    private async Task ReturnBook()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var userId = authState.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+        if (!string.IsNullOrEmpty(userId))
+        {
+            await BookService.ReturnBookAsync(bookId, userId);
+            Navigation.NavigateTo("/borrowed-books");
+        }
+    }
+}

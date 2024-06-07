@@ -1,0 +1,63 @@
+@page "/books"
+@using BlazorApp3.Data
+@using BlazorApp3.Services
+@inject IBookService BookService
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<div class="books-container">
+    <h3>Książki</h3>
+
+    <div class="search-container">
+        <input type="text" @bind="searchTerm" placeholder="Szukaj książek..." />
+        <select @bind="sortOption">
+            <option value="title">Tytuł</option>
+            <option value="author">Autor</option>
+            <option value="popularity">Popularność</option>
+        </select>
+        <button @onclick="SearchBooks">Szukaj</button>
+    </div>
+
+    @if (books == null)
+    {
+        <p>Ładowanie...</p>
+    }
+    else if (books.Count == 0)
+    {
+        <p>Nie znaleziono książek.</p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var book in books)
+            {
+                <li>
+                    <a href="@($"/book/{book.Id}")" class="link-button">
+                        @book.Title, Autor: @book.Author
+                    </a>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    private string searchTerm = string.Empty;
+    private string sortOption = "title";
+    private List<Book> books;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBooks();
+    }
+
+    private async Task LoadBooks()
+    {
+        books = await BookService.GetBooksAsync(searchTerm, sortOption);
+    }
+
+    private async Task SearchBooks()
+    {
+        await LoadBooks();
+    }
+}

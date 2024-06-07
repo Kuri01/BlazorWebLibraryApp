@@ -1,0 +1,56 @@
+.borrowed-books-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.borrowed-books-container h3 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #333;
+}
+
+.borrowed-books-container ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.borrowed-books-container li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.borrowed-books-container li a {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+    margin-right: auto;
+}
+
+.borrowed-books-container li a:hover {
+    text-decoration: underline;
+}
+
+.borrowed-books-container button {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.borrowed-books-container button:hover {
+    background-color: #c82333;
+}

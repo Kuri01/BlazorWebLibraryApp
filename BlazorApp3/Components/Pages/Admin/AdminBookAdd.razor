@@ -1,0 +1,39 @@
+@page "/admin/books/add"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Administrator")]
+@using BlazorApp3.Data
+@using BlazorApp3.Services
+@inject IBookService BookService
+@inject NavigationManager Navigation
+
+<div class="admin-book-add-container">
+    <h3>Dodaj Nową Książkę</h3>
+
+    <EditForm Model="book" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <div>
+            <label>Tytuł:</label>
+            <InputText @bind-Value="book.Title" />
+        </div>
+        <div>
+            <label>Autor:</label>
+            <InputText @bind-Value="book.Author" />
+        </div>
+        <div>
+            <label>Opis:</label>
+            <InputTextArea @bind-Value="book.Description" />
+        </div>
+        <button type="submit">Dodaj</button>
+    </EditForm>
+</div>
+
+@code {
+private Book book = new Book();
+
+private async Task HandleValidSubmit()
+{
+await BookService.AddBookAsync(book);
+Navigation.NavigateTo("/admin/books");
+}
+}

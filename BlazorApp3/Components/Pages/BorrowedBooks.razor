@@ -1,0 +1,66 @@
+@page "/borrowed-books"
+@rendermode InteractiveServer
+@using System.Security.Claims
+@using BlazorApp3.Data
+@using BlazorApp3.Services
+@inject IBookService BookService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+
+<div class="borrowed-books-container">
+    <h3>Wypożyczone Książki</h3>
+
+    @if (userBooks == null)
+    {
+    <p>Ładowanie...</p>
+    }
+    else if (userBooks.Count == 0)
+    {
+    <p>Nie masz wypożyczonych książek.</p>
+    }
+    else
+    {
+    <ul>
+        @foreach (var borrowedBook in userBooks)
+        {
+        <li>
+            <a href="#" @onclick="() => RedirectToBookDetails(borrowedBook.Book.Id)">
+                @borrowedBook.Book.Title by @borrowedBook.Book.Author
+            </a>
+            <button @onclick="() => ReturnBook(borrowedBook.Book.Id)">Zwróć</button>
+        </li>
+        }
+    </ul>
+    }
+</div>
+
+@code {
+private List<BorrowedBook> userBooks;
+
+protected override async Task OnInitializedAsync()
+{
+var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+var userId = authState.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+if (!string.IsNullOrEmpty(userId))
+{
+userBooks = await BookService.GetUserBooksAsync(userId);
+}
+}
+
+private void RedirectToBookDetails(int bookId)
+{
+Navigation.NavigateTo($"/book/{bookId}");
+}
+
+private async Task ReturnBook(int bookId)
+{
+var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+var userId = authState.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+if (!string.IsNullOrEmpty(userId))
+{
+await BookService.ReturnBookAsync(bookId, userId);
+userBooks = await BookService.GetUserBooksAsync(userId);
+}
+}
+}

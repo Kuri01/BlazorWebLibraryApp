@@ -1,0 +1,46 @@
+@page "/admin/books/details/{bookId:int}"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Administrator")]
+@using BlazorApp3.Data
+@using BlazorApp3.Services
+@using System.Security.Claims
+@inject IBookService BookService
+@inject NavigationManager Navigation
+
+<h3>Book Details</h3>
+
+@if (book == null)
+{
+<p>Loading...</p>
+}
+else
+{
+<h4>@book.Title by @book.Author</h4>
+<p>@book.Description</p>
+<h5>Borrowing History</h5>
+@if (borrowedBooks == null || borrowedBooks.Count == 0)
+{
+<p>No borrowing history available.</p>
+}
+else
+{
+<ul>
+    @foreach (var borrowedBook in borrowedBooks)
+    {
+    <li>@borrowedBook.UserId borrowed this book</li>
+    }
+</ul>
+}
+}
+
+@code {
+[Parameter] public int bookId { get; set; }
+private Book book;
+private List<BorrowedBook> borrowedBooks;
+
+protected override async Task OnInitializedAsync()
+{
+book = await BookService.GetBookByIdAsync(bookId);
+borrowedBooks = await BookService.GetBorrowedBooksByBookIdAsync(bookId);
+}
+}

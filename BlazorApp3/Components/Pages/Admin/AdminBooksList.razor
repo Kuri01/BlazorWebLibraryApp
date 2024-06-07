@@ -1,0 +1,60 @@
+@page "/admin/books"
+@rendermode InteractiveServer
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Administrator")]
+@using BlazorApp3.Data
+@using BlazorApp3.Services
+@inject IBookService BookService
+@inject NavigationManager Navigation
+
+<div class="admin-books-container">
+    <h3>Zarządzaj Książkami</h3>
+
+    <button class="add-book" @onclick="AddBook">Dodaj Nową Książkę</button>
+
+    @if (books == null)
+    {
+        <p>Ładowanie...</p>
+    }
+    else if (books.Count == 0)
+    {
+        <p>Brak dostępnych książek.</p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var book in books)
+            {
+                <li>
+                    <span>@book.Title by @book.Author</span>
+                    <button @onclick="() => EditBook(book.Id)">Edytuj</button>
+                    <button class="delete-button" @onclick="() => DeleteBook(book.Id)">Usuń</button>
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    private List<Book> books;
+
+    protected override async Task OnInitializedAsync()
+    {
+        books = await BookService.GetBooksAsync(null, "title");
+    }
+
+    private void AddBook()
+    {
+        Navigation.NavigateTo("/admin/books/add");
+    }
+
+    private void EditBook(int bookId)
+    {
+        Navigation.NavigateTo($"/admin/books/edit/{bookId}");
+    }
+
+    private async Task DeleteBook(int bookId)
+    {
+        await BookService.DeleteBookAsync(bookId);
+        books = await BookService.GetBooksAsync(null, "title");
+    }
+}

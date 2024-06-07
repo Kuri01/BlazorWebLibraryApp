@@ -1,0 +1,84 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@using BlazorApp3.Data
+@using BlazorApp3.Services
+@using System.Security.Claims
+@inject IBookService BookService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+
+<div class="home-container">
+    <h3>Strona Główna</h3>
+
+    @if (isAuthenticated)
+    {
+        <h4>Twoje wypożyczone książki</h4>
+        @if (userBooks == null)
+        {
+            <p>Ładowanie...</p>
+        }
+        else if (userBooks.Count == 0)
+        {
+            <p>Nie masz żadnych wypożyczonych książek.</p>
+        }
+        else
+        {
+            <ul>
+                @foreach (var borrowedBook in userBooks)
+                {
+                    <li>@borrowedBook.Book.Title, Autor: @borrowedBook.Book.Author</li>
+                }
+            </ul>
+        }
+    }
+    else
+    {
+        <h4>Top 10 Wypożyczanych Książek</h4>
+        @if (topBooks == null)
+        {
+            <p>Ładowanie...</p>
+        }
+        else if (topBooks.Count == 0)
+        {
+            <p>Nie znaleziono.</p>
+        }
+        else
+        {
+            <ul>
+                @foreach (var book in topBooks)
+                {
+                    <li>
+                        <a href="@($"/book/{book.Id}")">
+                            @book.Title by @book.Author
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+    }
+</div>
+
+@code {
+    private bool isAuthenticated;
+    private List<Book> topBooks;
+    private List<BorrowedBook> userBooks;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        isAuthenticated = authState.User.Identity.IsAuthenticated;
+
+        if (isAuthenticated)
+        {
+            var userId = authState.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                userBooks = await BookService.GetUserBooksAsync(userId) ?? new List<BorrowedBook>();
+            }
+        }
+        else
+        {
+            topBooks = await BookService.GetTopBooksAsync();
+        }
+    }
+}
